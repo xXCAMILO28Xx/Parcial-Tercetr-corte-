@@ -1,0 +1,113 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+ class DinoGameGUI extends JFrame implements ActionListener, KeyListener {
+    private static final int SCREEN_WIDTH = 40;
+    private static final int SCREEN_HEIGHT = 11;
+
+    private static final char DINO = 'A';
+    private static final char OBSTACLE = 'X';
+    private static final char GROUND = '_';
+
+    private int dinoPosY;
+    private boolean isJumping;
+    private int obstaclePos;
+    private int score;
+
+    private Timer timer;
+    private JLabel scoreLabel;
+
+    public DinoGameGUI() {
+        dinoPosY = SCREEN_HEIGHT - 1;
+        isJumping = false;
+        obstaclePos = SCREEN_WIDTH - 1;
+        score = 0;
+
+        setTitle("Dino Game");
+        setSize(SCREEN_WIDTH * 20, SCREEN_HEIGHT * 20);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setResizable(false);
+        addKeyListener(this);
+
+        scoreLabel = new JLabel("Score: " + score);
+        add(scoreLabel, BorderLayout.NORTH);
+
+        timer = new Timer(100, this);
+        timer.start();
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == timer) {
+            updateGame();
+            scoreLabel.setText("Score: " + score);
+            repaint();
+        }
+    }
+
+    public void paint(Graphics g) {
+        super.paint(g);
+        drawScreen(g);
+    }
+
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE && !isJumping) {
+            isJumping = true;
+            dinoPosY -= 3;
+        }
+    }
+
+    public void keyReleased(KeyEvent e) {
+    }
+
+    public void keyTyped(KeyEvent e) {
+    }
+
+    private void updateGame() {
+        if (isJumping) {
+            dinoPosY--;
+            if (dinoPosY == SCREEN_HEIGHT - 5) {
+                isJumping = false;
+            }
+        } else if (dinoPosY < SCREEN_HEIGHT - 1) {
+            dinoPosY++;
+        }
+
+        obstaclePos--;
+
+        if (obstaclePos == 0) {
+            obstaclePos = SCREEN_WIDTH - 1;
+            score++;
+        }
+
+        if (obstaclePos == 10 && dinoPosY == SCREEN_HEIGHT - 1) {
+            timer.stop();
+            JOptionPane.showMessageDialog(this, "Game Over. Your score: " + score);
+            System.exit(0);
+        }
+    }
+
+    private void drawScreen(Graphics g) {
+        for (int y = 0; y < SCREEN_HEIGHT; y++) {
+            for (int x = 0; x < SCREEN_WIDTH; x++) {
+                if (y == dinoPosY && x == 10) {
+                    g.drawString(String.valueOf(DINO), x * 20, y * 20);
+                } else if (x == obstaclePos && y == 10) {
+                    g.drawString(String.valueOf(OBSTACLE), x * 20, y * 20);
+                } else if (y == SCREEN_HEIGHT - 1) {
+                    g.drawString(String.valueOf(GROUND), x * 20, y * 20);
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            DinoGameGUI game = new DinoGameGUI();
+            game.setVisible(true);
+        });
+    }
+}
